@@ -1,6 +1,7 @@
 services:
   - type: web
     name: ninaivu-api
+    plan: free
     runtime: python
     rootDir: backend
     buildCommand: pip install -r requirements.txt && python manage.py collectstatic --no-input && python manage.py migrate
@@ -34,6 +35,7 @@ services:
 
   - type: worker
     name: ninaivu-worker
+    plan: free
     runtime: python
     rootDir: backend
     buildCommand: pip install -r requirements.txt
