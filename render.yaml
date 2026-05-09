@@ -26,41 +26,12 @@ services:
       # Paste these manually in the Render dashboard after first deploy
       - key: DATABASE_URL
         sync: false
-      - key: REDIS_URL
-        sync: false
       - key: EMAIL_HOST_USER
         sync: false
       - key: EMAIL_HOST_PASSWORD
         sync: false
 
-  - type: worker
-    name: ninaivu-worker
-    runtime: python
-    rootDir: backend
-    buildCommand: pip install -r requirements.txt
-    startCommand: celery -A config worker --loglevel=info --concurrency=2
-    envVars:
-      - key: PYTHON_VERSION
-        value: "3.11.0"
-      - key: DEBUG
-        value: "False"
-      - key: DEFAULT_FROM_EMAIL
-        value: hello@ninaivu.in
-      - key: EMAIL_HOST
-        value: smtp-relay.brevo.com
-      - key: EMAIL_PORT
-        value: "587"
-      - key: SECRET_KEY
-        fromService:
-          name: ninaivu-api
-          type: web
-          envVarKey: SECRET_KEY
-      # Paste these manually in the Render dashboard after first deploy
-      - key: DATABASE_URL
-        sync: false
-      - key: REDIS_URL
-        sync: false
-      - key: EMAIL_HOST_USER
-        sync: false
-      - key: EMAIL_HOST_PASSWORD
-        sync: false
+# ninaivu-worker is intentionally omitted for the waitlist phase.
+# Confirmation emails are sent synchronously in the Django view (fail_silently=True)
+# so a Brevo hiccup never blocks a signup. Re-add the worker when daily review
+# reminders are needed post-launch — see backend/config/celery.py for the stub.

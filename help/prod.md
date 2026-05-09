@@ -6,10 +6,10 @@
 |-------|---------|
 | Frontend | Vercel |
 | Backend API | Render (web service) |
-| Celery worker | Render (background worker) |
 | Database | Neon (external PostgreSQL — free, no expiry) |
-| Redis (Celery broker) | Upstash (external Redis — free tier) |
 | Email | Brevo (transactional SMTP) |
+
+> **No Celery worker for now.** Confirmation emails are sent synchronously inside the Django view with `fail_silently=True` — a Brevo hiccup never blocks a signup. Celery + Redis will be added post-launch for daily review reminders. See `backend/config/celery.py` for the stub.
 
 ---
 
@@ -68,16 +68,13 @@ This lets you send from `hello@ninaivu.in` instead of a Brevo subdomain.
 
 1. Push your repo to GitHub
 2. Go to [render.com](https://render.com) → **New** → **Blueprint**
-3. Connect your GitHub repo — Render detects `render.yaml` and previews both services
-4. Click **Apply** — Render creates `ninaivu-api` and `ninaivu-worker`
-5. For each `sync: false` env var, go to the service → **Environment** tab and paste in:
-
-   **ninaivu-api and ninaivu-worker (both need these):**
+3. Connect your GitHub repo — Render detects `render.yaml` and previews the `ninaivu-api` service
+4. Click **Apply** — Render creates the service
+5. For each `sync: false` env var, go to `ninaivu-api` → **Environment** tab and paste in:
 
    | Key | Value |
    |-----|-------|
    | `DATABASE_URL` | Neon connection string from step 1 |
-   | `REDIS_URL` | Upstash TLS string from step 2 |
    | `EMAIL_HOST_USER` | Brevo login email from step 3a |
    | `EMAIL_HOST_PASSWORD` | Brevo SMTP key from step 3a |
 
@@ -127,7 +124,6 @@ neon connection-string --project-id <your-neon-project-id> | xargs psql
 
 - [ ] Visit `https://ninaivu-api.onrender.com/admin/` — confirm Django admin loads
 - [ ] Submit a test email on the landing page — confirm `201 Created` in the Network tab
-- [ ] Check `ninaivu-worker` logs in Render — confirm `send_confirmation_email` task fires
 - [ ] Check your inbox — confirm the Brevo confirmation email arrives from `hello@ninaivu.in`
 - [ ] Verify the Neon dashboard shows the new row in `waitlist_waitlistentry`
 - [ ] Once DNS is configured (see `cloudflare.md`), update `VITE_API_URL` in Vercel and `ALLOWED_HOSTS` / `CORS_ALLOWED_ORIGINS` in Render
